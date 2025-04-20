@@ -112,4 +112,34 @@
 
 .messages-container::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+.papers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2em;
+}
+.paper-card {
+  background: #f7f7fa;
+  border-radius: 8px;
+  padding: 1em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.paper-title {
+  font-size: 1.1em;
+  margin-bottom: 0.2em;
+}
+.paper-authors, .paper-published {
+  color: #555;
+  font-size: 0.95em;
+  margin-bottom: 0.2em;
+}
+.paper-abstract {
+  margin: 0.5em 0;
+  font-size: 0.98em;
+}
+.paper-link {
+  color: #2a6ae9;
+  text-decoration: underline;
+  font-weight: 500;
 } 

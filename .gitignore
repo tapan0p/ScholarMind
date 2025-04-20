@@ -1,5 +1,10 @@
 # Backend
 backend/venv/
+backend/__pycache__/
+backend/.env
+backend/Agents/__pycache__/
+
+
 
 
 # Frontend

@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from chat import chat_once
+from Agents.ScholerMindAgent import run_conversation
+from Agents.AgentNodes import State
 
 app = FastAPI()
 
@@ -17,7 +18,11 @@ app.add_middleware(
 class ChatMessage(BaseModel):
     message: str
 
+state: State = {"messages": []}
+
 @app.post("/chat")
 async def chat(message: ChatMessage):
-    response = chat_once(message.message)
+    global state
+    state,response = run_conversation(user_input=message.message,state=state)
+    print(response)
     return {"response": response}

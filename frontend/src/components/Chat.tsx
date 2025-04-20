@@ -9,6 +9,36 @@ interface Message {
   timestamp: Date
 }
 
+interface Paper {
+  title: string
+  authors: string
+  published: string
+  abstract: string
+  url: string
+}
+
+function parsePapers(text: string): Paper[] | null {
+  // Detect the "Found X papers:" pattern
+  const match = text.match(/^Found \d+ papers:\n([\s\S]*)$/)
+  if (!match) return null
+
+  // Split papers by double newlines
+  const papersRaw = match[1].split(/\n{2,}/)
+  const papers: Paper[] = []
+
+  for (const raw of papersRaw) {
+    const title = (raw.match(/\*\*Title:\*\* (.*)/)?.[1] || '').trim()
+    const authors = (raw.match(/\*\*Authors:\*\* (.*)/)?.[1] || '').trim()
+    const published = (raw.match(/\*\*Published:\*\* (.*)/)?.[1] || '').trim()
+    const abstract = (raw.match(/\*\*Abstract:\*\* ([\s\S]*?)\*\*PDF:/)?.[1]?.trim() || '')
+    const url = (raw.match(/\*\*PDF:\*\* (.*)/)?.[1] || '').trim()
+    if (title) {
+      papers.push({ title, authors, published, abstract, url })
+    }
+  }
+  return papers.length ? papers : null
+}
+
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -94,27 +124,30 @@ const Chat = () => {
                 {message.sender === 'user' ? (
                   <div>{message.text}</div>
                 ) : (
-                  <ReactMarkdown
-                    components={{
-                      // Style code blocks
-                      code: ({node, inline, className, children, ...props}) => {
-                        const match = /language-(\w+)/.exec(className || '')
-                        return !inline ? (
-                          <pre className={className}>
-                            <code {...props}>
-                              {children}
-                            </code>
-                          </pre>
-                        ) : (
-                          <code className={className} {...props}>
-                            {children}
-                          </code>
-                        )
-                      }
-                    }}
-                  >
-                    {message.text}
-                  </ReactMarkdown>
+                  (() => {
+                    const papers = parsePapers(message.text)
+                    if (papers) {
+                      return (
+                        <div className="papers-list">
+                          {papers.map((paper, idx) => (
+                            <div className="paper-card" key={idx}>
+                              <div className="paper-title"><strong>{paper.title}</strong></div>
+                              <div className="paper-authors"><em>{paper.authors}</em></div>
+                              <div className="paper-published">{paper.published}</div>
+                              <div className="paper-abstract">{paper.abstract}</div>
+                              <a href={paper.url} target="_blank" rel="noopener noreferrer" className="paper-link">View PDF</a>
+                            </div>
+                          ))}
+                        </div>
+                      )
+                    }
+                    // fallback to markdown for normal LLM responses
+                    return (
+                      <ReactMarkdown>
+                        {message.text}
+                      </ReactMarkdown>
+                    )
+                  })()
                 )}
               </div>
               <div className="message-timestamp">
