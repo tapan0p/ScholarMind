@@ -69,7 +69,7 @@ def download_pdf(url: str) -> str:
         return None
 
 def process_pdf(file_path: str) -> bool:
-    """Process a PDF file and add it to the vector store"""
+    """Process a PDF file and replace the existing vector store with new document embeddings."""
     try:
         # Load PDF
         loader = PyPDFLoader(file_path)
@@ -79,18 +79,28 @@ def process_pdf(file_path: str) -> bool:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
         chunks = text_splitter.split_documents(documents)
 
-        # clear vector store
-        vectorstore.index.reset()  # Clear FAISS in-memory index
-        vectorstore.docstore._dict.clear()  # Clear FAISS docstore
-        
-        # Add to vector store
-        vectorstore.add_documents(chunks)
-        vectorstore.save_local(vector_store_path)
-        
+        # Create a new FAISS vector store from the chunks
+        new_vectorstore = FAISS.from_documents(chunks, embedding_model)
+
+        # Save the new vector store (overwrite existing one)
+        new_vectorstore.save_local(vector_store_path)
+
+        # Replace the global vectorstore and retriever
+        global vectorstore, retriever, rag_chain
+        vectorstore = new_vectorstore
+        retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 4})
+        rag_chain = RetrievalQA.from_chain_type(
+            llm=llm,
+            retriever=retriever,
+            return_source_documents=True,
+            chain_type="stuff"
+        )
+
         return True
     except Exception as e:
         print(f"Error processing PDF: {e}")
         return False
+
 
 def index_paper_from_url(url: str) -> bool:
     """Download and index a paper from a URL"""

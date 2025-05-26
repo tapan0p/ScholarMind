@@ -19,9 +19,14 @@ prompt = ChatPromptTemplate.from_messages([
     
     - Use the search_arxiv tool when the user explicitly asks to search for research papers (e.g., phrases like 'search for papers,' 'find papers,' or 'look up research on').
     
-    - Use the query_rag tool when the user asks questions that might be answered by the research papers that have been indexed in the system. This tool retrieves relevant information from papers that have been previously added to the system.
+    - Use the query_rag tool when user is asking question about a research paper or in general information that can be found in a research paper. This tool retrieves relevant information from papers that have been previously added to the system.
     
-    - For general questions not related to research papers, provide a concise and relevant response without using any tools."""),
+    - If the context of rag is not enough to answer the question, then polietly say that you don't know the answer.
+    - If you find the answer in the context, then answer the question based on the provided context.
+
+    - If the user asks a question that is not about a research paper or general information, politely say that you are not capable of answering that question.
+    
+    - Do not answer any query without any tool except query likes basic greetings on a conversation."""),
     ("placeholder", "{messages}")
 ])
 
