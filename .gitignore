@@ -9,7 +9,6 @@ backend/Agents/__pycache__/
 
 # Frontend
 webapp/node_modules/
-webapp/dist/
-webapp/.env
+webapp/build/
 
 
