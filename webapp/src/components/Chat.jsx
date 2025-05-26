@@ -1,28 +1,25 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math"; // <-- Add this import
-import rehypeKatex from "rehype-katex"; // <-- Add this import
-// Import KaTeX CSS here if not done globally, or ensure it's imported in App.js/index.js
-// import 'katex/dist/katex.min.css'; // Example: if you want to import it directly here
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import axios from "axios";
 
-// Convert the TypeScript parsePapers function to JavaScript
 const parsePapers = (text) => {
   // Detect the "Found X papers:" pattern
   const match = text.match(/^Found \d+ papers:\n([\s\S]*)$/);
   if (!match || !match[1]) return null;
 
-  // Split papers by double newlines (or more)
+  
   const papersRaw = match[1].trim().split(/\n\s*\n+/);
   const papers = [];
 
   for (const raw of papersRaw) {
-    if (!raw.trim()) continue; // Skip empty entries
+    if (!raw.trim()) continue;
 
     const titleMatch = raw.match(/\*\*Title:\*\* (.*)/);
     const authorsMatch = raw.match(/\*\*Authors:\*\* (.*)/);
     const publishedMatch = raw.match(/\*\*Published:\*\* (.*)/);
-    // Adjusted regex for abstract to be less greedy and handle cases where PDF might be on the next line
     const abstractMatch = raw.match(
       /\*\*Abstract:\*\* ([\s\S]*?)(?=\n\*\*PDF:\*\*|\n\n|$)/
     );
@@ -41,8 +38,8 @@ const parsePapers = (text) => {
   return papers.length ? papers : null;
 };
 
-// Update the prop destructuring to receive both the array and setter
-const Chat = ({researchPapers,setResearchPapers }) => {
+
+const Chat = ({ researchPapers, setResearchPapers }) => {
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -86,15 +83,19 @@ const Chat = ({researchPapers,setResearchPapers }) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8000/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await axios.post(
+        "http://localhost:8000/api/chat",
+        {
+          message: inputMessage,
         },
-        body: JSON.stringify({ message: inputMessage }),
-      });
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      const data = await response.json();
+      const data = response.data;
 
       const assistantMessage = {
         id: Date.now() + 1,
@@ -106,7 +107,6 @@ const Chat = ({researchPapers,setResearchPapers }) => {
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Error:", error);
-      // Add error message to chat
       setMessages((prev) => [
         ...prev,
         {
@@ -133,20 +133,17 @@ const Chat = ({researchPapers,setResearchPapers }) => {
           />
         );
       }
-      // For other links (e.g., relative, mailto), render as default or with other custom logic
       return <a {...props} />;
     },
   };
 
-  // Fix the handlePaperSelect function
   const handlePaperSelect = (paper) => {
     if (setResearchPapers && paper) {
-      // Check if paper already exists by comparing titles
-      const isDuplicate = researchPapers.some(p => p.title === paper.title);
+      const isDuplicate = researchPapers.some((p) => p.title === paper.title);
       if (isDuplicate) {
         return;
       }
-      setResearchPapers(prev => [...prev, paper]);
+      setResearchPapers((prev) => [...prev, paper]);
       console.log("Added to collection:", paper.title);
     }
   };
@@ -209,14 +206,24 @@ const Chat = ({researchPapers,setResearchPapers }) => {
                                   {paper.abstract}
                                 </p>
                               </div>
-                             
+
                               <div className="mt-4 flex justify-end">
                                 <button
                                   onClick={() => handlePaperSelect(paper)}
                                   className="px-2 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm font-medium flex items-center cursor-pointer active:scale-95 active:bg-emerald-800"
                                 >
-                                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                  <svg
+                                    className="w-4 h-4 mr-2"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M12 4v16m8-8H4"
+                                    />
                                   </svg>
                                   Add to Collection
                                 </button>

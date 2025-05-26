@@ -8,6 +8,8 @@ backend/Agents/__pycache__/
 
 
 # Frontend
-frontend/node_modules/
+webapp/node_modules/
+webapp/dist/
+webapp/.env
 
 

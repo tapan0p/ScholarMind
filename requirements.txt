@@ -1,7 +1,0 @@
-langgraph
-langchain-core
-langchain-groq
-requests
-fastapi
-pydantic
-python-dotenv
