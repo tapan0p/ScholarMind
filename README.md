@@ -20,4 +20,4 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ``` 
 
-![Alt text](public\image.png)
+![Alt text](https://github.com/tapan0p/ScholarMind/blob/main/public/image.png)
